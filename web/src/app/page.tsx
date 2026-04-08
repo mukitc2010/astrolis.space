@@ -3,10 +3,17 @@ import { Feed } from '@/components/feed'
 import Link from 'next/link'
 
 export default async function Home() {
-  const supabase = await createClient()
-  const session = supabase
-    ? (await supabase.auth.getSession()).data.session
-    : null
+  let session = null
+
+  try {
+    const supabase = await createClient()
+    if (supabase) {
+      const { data } = await supabase.auth.getSession()
+      session = data.session
+    }
+  } catch {
+    // Supabase not available — show landing page
+  }
 
   if (session) {
     return (
