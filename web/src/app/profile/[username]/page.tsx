@@ -5,7 +5,9 @@ import Link from 'next/link'
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = supabase
+    ? (await supabase.auth.getSession()).data.session
+    : null
 
   let profile
   try {

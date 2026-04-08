@@ -7,7 +7,9 @@ import Link from 'next/link'
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = supabase
+    ? (await supabase.auth.getSession()).data.session
+    : null
 
   let post
   try {
