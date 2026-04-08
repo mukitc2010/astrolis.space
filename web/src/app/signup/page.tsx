@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -21,11 +20,26 @@ export default function SignupPage() {
     setError('')
 
     try {
-      await api.signup({ email, password, username, display_name: displayName })
-
-      // Auto-login after signup
       const supabase = createClient()
-      await supabase.auth.signInWithPassword({ email, password })
+
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { username, display_name: displayName } },
+      })
+
+      if (authError) throw authError
+      if (!authData.user) throw new Error('Signup failed')
+
+      // Create profile row
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: authData.user.id,
+        username,
+        display_name: displayName,
+      })
+
+      if (profileError) throw profileError
 
       router.push('/')
       router.refresh()
